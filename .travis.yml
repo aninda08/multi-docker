@@ -1,0 +1,21 @@
+language: generic
+sudo: required
+sevices: 
+  - docker
+
+before-install:
+  - docker build -t aninda08/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true aninda08/multi-docker npm run test -- --coverage
+
+after_success:
+  - docker build -t aninda08/multi-client ./client
+  - docker build -t aninda08/multi-nginx ./nginx
+  - docker build -t aninda08/multi-server ./server
+  - docker build -t aninda08/multi-worker ./worker
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push aninda08/multi-client
+  - docker push aninda08/multi-nginx
+  - docker push aninda08/multi-server
+  - docker push aninda08/multi-worker
